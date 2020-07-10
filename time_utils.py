@@ -1,7 +1,6 @@
 import pytz
 import datetime
-
-LOCAL_TIMEZONE = 'Canada/Eastern' # change depending on host.
+from cfg import *
 
 def localTime(zone=LOCAL_TIMEZONE):
     '''

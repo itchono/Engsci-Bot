@@ -5,6 +5,7 @@ import os
 import dotenv
 
 from self_ping import SelfPing, keep_alive
+from bot_modules import Listener, RoleManager
 
 dotenv.load_dotenv()
 TOKEN = os.getenv("TOKEN") # this is the bot token
@@ -18,7 +19,7 @@ client = commands.Bot(command_prefix=commands.when_mentioned_or("$"), case_insen
                       help_command=commands.MinimalHelpCommand(
                           no_category="Help Command"))
 
-cogs = [SelfPing]    
+cogs = [SelfPing, Listener, RoleManager]    
 for c in cogs: client.add_cog(c(client)) 
 
 
