@@ -6,7 +6,14 @@ from threading import Thread # used to create separate parallel process to keep 
 
 import urllib.request
 
+# disable logging
+import logging
+import os
+
 from time_utils import localTime
+
+logging.getLogger('werkzeug').disabled = True
+os.environ['WERKZEUG_RUN_MAIN'] = 'true'
 
 app = Flask('')
 
@@ -52,7 +59,6 @@ class SelfPing(commands.Cog):
             try:
                 request = urllib.request.Request(url,None,headers)
                 response = urllib.request.urlopen(request)
-                print(response.read().decode("utf-8"))
 
                 if url == me: self.lastping = {"message":response.read().decode("utf-8"), "time":localTime()}
             except: print(f"ERROR pinging {url}")
