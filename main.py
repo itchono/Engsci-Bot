@@ -29,7 +29,7 @@ for c in cogs: client.add_cog(c(client))
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.online,
-                                 activity=discord.Game("[$] haha, get it?"))
+                                 activity=discord.Game(f"[{BOT_PREFIX}] haha, get it?"))
     print(f"{client.user} is online.")
 keep_alive() # start internal server to keep bot loaded
 client.run(TOKEN) # log into Discord

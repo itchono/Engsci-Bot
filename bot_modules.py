@@ -63,6 +63,67 @@ class RoleManager(commands.Cog):
 
         await u.edit(roles=roles)
         await ctx.message.add_reaction("👍")
+
+    @commands.group()
+    async def LEC(self, ctx:commands.Context):
+        if ctx.invoked_subcommand is None:
+            await ctx.send('Please specify which section you want to join i.e. !LEC 101 or !LEC 102')
+
+    @LEC.command(name="101")
+    async def LEC101(self, ctx:commands.Context):
+
+        try: 
+            u = self.guild.get_member(ctx.author.id)
+        except:
+            await ctx.send(f"This command only works for members of {self.guild}.")
+            return
+
+
+        role101 = discord.utils.get(self.guild.roles, name="LEC0101")
+        role102 = discord.utils.get(self.guild.roles, name="LEC0102")
+
+        roles = u.roles
+
+        if role101 in roles:
+            roles.remove(role101)
+            await ctx.send("You no longer have LEC0101.", delete_after=30)
+        else:
+            if role102 in roles: 
+                roles.remove(role102)
+                await ctx.send("You no longer have LEC0102.", delete_after=30)
+            roles.append(role101)
+            await ctx.send("You now have LEC0101.", delete_after=30)
+
+        await u.edit(roles=roles)
+        await ctx.message.add_reaction("👍")
+
+    @LEC.command(name="102")
+    async def LEC102(self, ctx:commands.Context):
+
+        try: 
+            u = self.guild.get_member(ctx.author.id)
+        except:
+            await ctx.send(f"This command only works for members of {self.guild}.")
+            return
+
+
+        role101 = discord.utils.get(self.guild.roles, name="LEC0101")
+        role102 = discord.utils.get(self.guild.roles, name="LEC0102")
+
+        roles = u.roles
+
+        if role102 in roles:
+            roles.remove(role102)
+            await ctx.send("You no longer have LEC0102.", delete_after=30)
+        else:
+            if role101 in roles: 
+                roles.remove(role101)
+                await ctx.send("You no longer have LEC0101.", delete_after=30)
+            roles.append(role102)
+            await ctx.send("You now have LEC0102.", delete_after=30)
+
+        await u.edit(roles=roles)
+        await ctx.message.add_reaction("👍")
         
 
     @commands.command()
