@@ -22,7 +22,7 @@ class Listener(commands.Cog):
         if not (introductions_ch := discord.utils.get(user.guild.channels, name='introduce-yourself')):
             introductions_ch = user.guild.channels[0]
 
-        if not (main_ch := discord.utils.get(user.guild.channels, name='arrival')):
+        if not (main_ch := discord.utils.get(user.guild.channels, name='arrivals')):
             main_ch = user.guild.channels[0]
 
         await main_ch.send(f"{user.mention}, Welcome to the EngSci 2T3 Server! Please head over to {rule_ch.mention} and read our rules, then introduce yourself in {introductions_ch.mention}")
