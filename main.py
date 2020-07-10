@@ -8,6 +8,7 @@ from cfg import *
 
 from self_ping import SelfPing, keep_alive
 from bot_modules import Listener, RoleManager
+from pruner import Pruner
 
 dotenv.load_dotenv()
 TOKEN = os.getenv("TOKEN") # this is the bot token
@@ -21,7 +22,7 @@ client = commands.Bot(command_prefix=commands.when_mentioned_or(BOT_PREFIX), cas
                       help_command=commands.MinimalHelpCommand(
                           no_category="Help Command"))
 
-cogs = [SelfPing, Listener, RoleManager]    
+cogs = [SelfPing, Listener, RoleManager, Pruner]    
 for c in cogs: client.add_cog(c(client)) 
 
 

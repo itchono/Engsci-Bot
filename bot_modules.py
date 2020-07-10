@@ -39,6 +39,33 @@ class RoleManager(commands.Cog):
         print(f"Role manager loaded for: {g}")
 
     @commands.command()
+    async def gamer(self, ctx:commands.Context):
+        '''
+        Assigns/unassigns the gamer role
+        '''
+
+        try: 
+            u = self.guild.get_member(ctx.author.id)
+        except:
+            await ctx.send(f"This command only works for members of {self.guild}.")
+            return
+
+        roles = u.roles
+
+        gamer_role = discord.utils.get(self.guild.roles, name="Weekly Gamer")
+
+        if gamer_role in roles:
+            roles.remove(gamer_role)
+            await ctx.send(f"{ctx.author.mention}, you have been removed from `Weekly Gamer`")
+        else:
+            roles.append(gamer_role)
+            await ctx.send(f"{ctx.author.mention}, you have been added to `Weekly Gamer`")
+
+        await u.edit(roles=roles)
+        await ctx.message.add_reaction("👍")
+        
+
+    @commands.command()
     async def pronouns(self, ctx:commands.Context,*, pronouns):
         '''
         Assigns a pronoun role to the user calling it.
@@ -53,6 +80,13 @@ class RoleManager(commands.Cog):
 
         Message the mods if you would like other roles! 
         '''
+        def pronoun_role(role_name):
+            '''
+            Gets the pronoun role from the server, if it exists.
+            '''
+            return discord.utils.get(self.guild.roles, name=role_name)
+
+
         currently_existent_roles = {"he/him", "she/her", "they/them", "ze/zir", "ze/hir", "other"}
 
         try: 
@@ -63,8 +97,8 @@ class RoleManager(commands.Cog):
 
         if pronouns in currently_existent_roles:
             roles = set(u.roles)
-            roles -= set([self.pronoun_role(i) for i in currently_existent_roles]) # if they want to change pronouns
-            roles.update({self.pronoun_role(pronouns)})
+            roles -= set([pronoun_role(i) for i in currently_existent_roles]) # if they want to change pronouns
+            roles.update({pronoun_role(pronouns)})
             roles = list(roles)
             await u.edit(roles=roles)
             await ctx.message.add_reaction("👍")
@@ -72,8 +106,4 @@ class RoleManager(commands.Cog):
             s = "\n* ".join(currently_existent_roles)
             await ctx.send(f"Our currently available pronouns are\n* {s}. \nI was unable to find your requested pronouns from this set. Please let a mod know if you would like a custom role.")
         
-    def pronoun_role(self, role_name):
-        '''
-        Gets the pronoun role from the server, if it exists.
-        '''
-        return discord.utils.get(self.guild.roles, name=role_name)
+    
