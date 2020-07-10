@@ -1,8 +1,7 @@
 import discord
 from discord.ext import commands
 from cfg import *
-import datetime
-import math
+import datetime, math, typing
 
 class Listener(commands.Cog):
     def __init__(self, bot):
