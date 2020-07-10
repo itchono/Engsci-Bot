@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 from cfg import *
+import datetime
+import math
 
 class Listener(commands.Cog):
     def __init__(self, bot):
@@ -167,4 +169,53 @@ class RoleManager(commands.Cog):
             s = "\n* ".join(currently_existent_roles)
             await ctx.send(f"Our currently available pronouns are\n* {s}. \nI was unable to find your requested pronouns from this set. Please let a mod know if you would like a custom role.")
         
-    
+class General(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.guild = None
+        self._last_member = None
+
+    @commands.command()
+    async def dateof(self, ctx: commands.Context,*, thing: typing.Union[discord.TextChannel, discord.User, discord.VoiceChannel, discord.Message]):
+        '''
+        Gets the creation time of a Channel, User, or Message.
+        '''
+        await ctx.send(f"{thing} was created on {thing.created_at.strftime('%B %m %Y at %I:%M:%S %p %Z')}")
+
+    @commands.command()
+    async def staleness(self, ctx: commands.Context, channel: discord.TextChannel):
+        '''
+        Checks when the last message was sent in a channel
+        '''
+        msg = (await channel.history(limit=1).flatten()).pop()
+
+        t0 = msg.created_at
+        difference = (datetime.datetime.now() - t0).days
+
+        await ctx.send(f"Last message in {channel.mention} was sent on {t0.strftime('%B %m %Y at %I:%M:%S %p %Z')} by `{msg.author.display_name}` ({difference} days ago.)")
+
+    @commands.command()
+    async def moststale(self, ctx: commands.Context, limit:int = None):
+        '''
+        Returns the top n most stale channels (default: 15%)
+        '''
+
+        channels = {}
+
+        await ctx.trigger_typing()
+
+        for channel in ctx.guild.text_channels:
+            try:
+                msg = (await channel.history(limit=1).flatten()).pop()
+
+                t0 = msg.created_at
+                difference = (datetime.datetime.now() - t0).days
+
+                channels[channel.mention] = difference
+            except: pass # empty channel
+
+        if not limit: limit = math.ceil(0.15*len(channels)) # 15% of top
+
+        top = sorted([(channels[k], k) for k in channels], reverse=True)[:limit]
+
+        await ctx.send(f"Top {limit} most stale channels:\n" + "\n".join([f"{top.index(i) + 1}. {i[1]} ({i[0]} days)" for i in top]))
