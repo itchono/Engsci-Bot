@@ -21,7 +21,7 @@ class Pruner(commands.Cog):
 
         for channel in ctx.guild.text_channels:
 
-            authors = set([i.author for i in await channel.history(limit=None,after=threshold).flatten()])
+            authors = set([i.author for i in await channel.history(limit=None,after=threshold).flatten() if i.type == discord.MessageType.default])
             members -= authors
 
         await ctx.send(f"{len(members)} members detected to have not posted in the past {day} days.")
