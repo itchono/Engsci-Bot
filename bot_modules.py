@@ -167,7 +167,25 @@ class RoleManager(commands.Cog):
         else:
             s = "\n* ".join(currently_existent_roles)
             await ctx.send(f"Our currently available pronouns are\n* {s}. \nI was unable to find your requested pronouns from this set. Please let a mod know if you would like a custom role.")
-        
+
+
+def textToEmoji(s):
+    '''
+    Converts text to equivalent emoji
+    '''
+    lookupTable = {"a":u"\U0001F1E6","b":u"\U0001F1E7","c":u"\U0001F1E8","d":u"\U0001F1E9","e":u"\U0001F1EA","f":u"\U0001F1EB","g":u"\U0001F1EC","h":u"\U0001F1ED","i":u"\U0001F1EE","j":u"\U0001F1EF","k":u"\U0001F1F0","l":u"\U0001F1F1","m":u"\U0001F1F2","n":u"\U0001F1F3","o":u"\U0001F1F4","p":u"\U0001F1F5","q":u"\U0001F1F6","r":u"\U0001F1F7","s":u"\U0001F1F8","t":u"\U0001F1F9","u":u"\U0001F1FA","v":u"\U0001F1FB","w":u"\U0001F1FC","x":u"\U0001F1FD","y":u"\U0001F1FE","z":u"\U0001F1FF"}
+    s = s.lower()
+
+    newS = ''
+    for c in s:
+        if c in lookupTable:
+            newS += lookupTable[c] + " "
+        elif c in "0123456789":
+            newS += {0:"0️⃣", 1:"1️⃣", 2:"2️⃣", 3:"3️⃣", 4:"4️⃣", 5:"5️⃣", 6:"6️⃣", 7:"7️⃣", 8:"8️⃣", 9:"9️⃣"}[int(c)]
+        else:
+            newS += c
+    return newS
+
 class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -218,3 +236,45 @@ class General(commands.Cog):
         top = sorted([(channels[k], k) for k in channels], reverse=True)[:limit]
 
         await ctx.send(f"Top {limit} most stale channels:\n" + "\n".join([f"{top.index(i) + 1}. {i[1]} ({i[0]} days)" for i in top]))
+
+    @commands.command()
+    async def poll(self, ctx: commands.Context, prompt:str, *options):
+        f'''
+        Creates a poll.
+        Specify a prompt, and then split options by spaces.
+
+        ex. !poll "apples or bananas?" "apples are better" "bananas are the best!"
+        '''
+
+        if len(options) < 36:
+
+            lines = "\n".join([f"{i+1}) {options[i]}" for i in range(len(options))])
+
+            msg = await ctx.send(f"**__POLL__:\n{prompt}**\n{lines}\n\n {ctx.author.mention}, react to this post with :octagonal_sign: to stop the poll.")
+
+            reacts = "123456789abcdefghijklmnopqrstuvwxyz"
+
+            ## Apply reactions
+            for i in range(len(options)): await msg.add_reaction(textToEmoji(reacts[i]))
+            await msg.add_reaction("🛑")
+
+            ## Await Responses
+            def check(reaction, user): return user == ctx.author and reaction.emoji == "🛑"
+
+            await self.bot.wait_for('reaction_add', check=check)
+
+            e = discord.Embed(title=f"**__POLL RESULT__:\n{prompt}**")
+
+            for i in range(len(options)):
+
+                reaction = (await ctx.channel.fetch_message(msg.id)).reactions[i]
+
+                users = [u.mention for u in await reaction.users().flatten() if u != self.bot.user]
+
+                people = " ".join(users)
+
+                e.add_field(name=f"{i+1}) {options[i]}: {len(users)}", value = people if people else "No one", inline=False)
+
+            await ctx.send(embed=e)
+
+        else: await ctx.send("Sorry, you can only choose up to 35 options at a time.")   
