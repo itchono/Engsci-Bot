@@ -12,6 +12,7 @@ from broken_picture_phone import BPC
 from tex_renderer import TexRender
 from pruner import Pruner
 from message_copier import Copier
+from roler import Roler
 
 dotenv.load_dotenv()
 TOKEN = os.getenv("TOKEN") # this is the bot token
@@ -25,7 +26,7 @@ client = commands.Bot(command_prefix=commands.when_mentioned_or(BOT_PREFIX), cas
                       help_command=commands.MinimalHelpCommand(
                           no_category="Help Command"))
 
-cogs = [SelfPing, Listener, RoleManager, Pruner, General, BPC, TexRender, Copier]    
+cogs = [SelfPing, Listener, RoleManager, Pruner, General, BPC, TexRender, Copier, Roler]    
 for c in cogs: client.add_cog(c(client)) 
 
 

@@ -27,6 +27,13 @@ class Listener(commands.Cog):
 
         await main_ch.send(f"{user.mention}, Welcome to the EngSci 2T3 Server! Please head over to {rule_ch.mention} and read our rules, then introduce yourself in {introductions_ch.mention}")
 
+        r = discord.utils.get(user.guild.roles, name="New Member")
+
+        roles = user.roles
+        roles.append(r)
+        await user.edit(roles=roles)
+
+
 class RoleManager(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
