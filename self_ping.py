@@ -51,7 +51,7 @@ class SelfPing(commands.Cog):
         headers={'User-Agent':user_agent}
         
         urls = ['https://comrade--itchono.repl.co/', 'https://DadBot--itchono.repl.co', 
-        'https://SET-Bot--itchono.repl.co', 'https://psi-tama--itchono.repl.co', 'https://Comrade-Backup--itchono.repl.co'] # pinging my other bots
+        'https://SET-Bot--itchono.repl.co', 'https://psi-tama--itchono.repl.co'] # pinging my other bots
 
         me = 'https://psi-tama--itchono.repl.co'
 
