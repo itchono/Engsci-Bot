@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+
 class Copier(commands.Cog):
     def __init__(self, bot): self.bot = bot
 
@@ -23,14 +24,17 @@ class Copier(commands.Cog):
 
             webhook = None
             for wh in await destination.webhooks():
-                if wh.name == "ChannelCopier": webhook = wh
-            if not webhook: webhook = await destination.create_webhook(name="ChannelCopier", avatar=None)
+                if wh.name == "ChannelCopier":
+                    webhook = wh
+            if not webhook:
+                webhook = await destination.create_webhook(name="ChannelCopier", avatar=None)
 
             async for message in source.history(limit=None, oldest_first=True):
                 try:
-                    m = await webhook.send(wait = True, content=message.content, username=message.author.display_name, avatar_url=message.author.avatar_url, embeds=message.embeds, files=[await a.to_file() for a in message.attachments])
-                    for r in message.reactions: await m.add_reaction(r)
-                except:
+                    m = await webhook.send(wait=True, content=message.content, username=message.author.display_name, avatar_url=message.author.avatar_url, embeds=message.embeds, files=[await a.to_file() for a in message.attachments])
+                    for r in message.reactions:
+                        await m.add_reaction(r)
+                except BaseException:
                     await ctx.send(f"Error processing message: {message.jump_url}")
 
         except asyncio.TimeoutError:

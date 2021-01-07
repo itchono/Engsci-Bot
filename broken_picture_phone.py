@@ -1,13 +1,16 @@
 import discord
 from discord.ext import commands
 import asyncio
+from utils.utilities import bot_prefix, dm_channel
+
 
 async def DM(s: str, user: discord.User, embed=None):
     '''
     DMs a person
     '''
-    userChannel = await user.create_dm()
+    userChannel = await dm_channel(user)
     await userChannel.send(content=s, embed=embed)
+
 
 class PictoChain():
     '''
@@ -40,7 +43,8 @@ class PictoChain():
         '''
         Sends out a mapped list of prompts and drawings
         '''
-        return zip(range(len(self.prompts)),self.prompts, self.prompt_authors, self.images, self.image_authors)
+        return zip(range(len(self.prompts)), self.prompts,
+                   self.prompt_authors, self.images, self.image_authors)
 
     def prompt(self):
         '''
@@ -59,9 +63,8 @@ class BPCGame():
     def __init__(self, players, ctx, bot):
         self.players = players
         self.round_number = 0
-        self.ctx = ctx # discord context used for the game
-        self.bot = bot # discord bot used for the game
-
+        self.ctx = ctx  # discord context used for the game
+        self.bot = bot  # discord bot used for the game
 
         self.pictochains = {}
 
@@ -80,18 +83,20 @@ class BPCGame():
         Sends out queries to draw
         '''
         pending = [p.id for p in self.players]
-        rolled_ids = self.roll(pending, 2*self.round_number+1)
+        rolled_ids = self.roll(pending, 2 * self.round_number + 1)
 
         mapping = dict(zip(pending, rolled_ids))
 
-        for i in mapping: await DM(f"Round {self.round_number}: Draw something that describes the following prompt ```{self.pictochains[mapping[i]].prompt()}```", self.ctx.guild.get_member(i))
+        for i in mapping:
+            await DM(f"Round {self.round_number}: Draw something that describes the following prompt ```{self.pictochains[mapping[i]].prompt()}```", self.ctx.guild.get_member(i))
 
         def check(m): return len(m.attachments) > 0 and m.author.id in pending
 
         while pending:
             msg = await self.bot.wait_for('message', check=check)
 
-            self.pictochains[mapping[msg.author.id]].draw(self.ctx.guild.get_member(msg.author.id), msg.attachments[0].url)
+            self.pictochains[mapping[msg.author.id]].draw(
+                self.ctx.guild.get_member(msg.author.id), msg.attachments[0].url)
             await msg.add_reaction("👍")
             pending.remove(msg.author.id)
 
@@ -102,11 +107,11 @@ class BPCGame():
         Describe images.
         '''
         pending = [p.id for p in self.players]
-        rolled_ids = self.roll(pending, 2*self.round_number)
+        rolled_ids = self.roll(pending, 2 * self.round_number)
 
         mapping = dict(zip(pending, rolled_ids))
 
-        for i in mapping: 
+        for i in mapping:
 
             if self.round_number == 0:
                 await DM(f"Round {self.round_number}: Please type in your prompt below.", self.ctx.guild.get_member(i))
@@ -120,18 +125,20 @@ class BPCGame():
         while pending:
             msg = await self.bot.wait_for('message', check=check)
 
-            self.pictochains[mapping[msg.author.id]].write(self.ctx.guild.get_member(msg.author.id), msg.content)
+            self.pictochains[mapping[msg.author.id]].write(
+                self.ctx.guild.get_member(msg.author.id), msg.content)
             await msg.add_reaction("👍")
             pending.remove(msg.author.id)
 
             await self.ctx.send(f"{self.ctx.guild.get_member(msg.author.id).display_name} has submitted their {'prompt' if self.round_number == 0 else 'description'}! ({len(self.players) -len(pending)}/{len(self.players)})")
-            
+
     async def start(self, rounds=None):
         '''
         Starts the game
         '''
 
-        if not rounds: rounds = len(self.players)
+        if not rounds:
+            rounds = len(self.players)
 
         for p in self.players:
             self.pictochains[p.id] = PictoChain(p)
@@ -144,12 +151,12 @@ class BPCGame():
             await asyncio.sleep(2)
             self.round_number += 1
 
+        # End of game
 
-        ### End of game
-        
         for p in self.players:
             await self.ctx.send(f"**Here is {p.display_name}'s story chain:**")
-            for round_number, prompt, prompt_author, drawing, drawing_author in self.pictochains[p.id].export():
+            for round_number, prompt, prompt_author, drawing, drawing_author in self.pictochains[p.id].export(
+            ):
                 await self.ctx.send(f"Round {round_number} - {'Prompt' if round_number == 0 else 'Description'} by {prompt_author.display_name}: ```{prompt}```")
 
                 await asyncio.sleep(1)
@@ -162,13 +169,12 @@ class BPCGame():
 
         await self.ctx.send("That's all folks! Thanks for playing!")
 
-            
-
 
 class BPC(commands.Cog):
     '''
     Broken Picture Phone Game
     '''
+
     def __init__(self, bot):
         self.bot = bot
         self.active = False
@@ -179,7 +185,7 @@ class BPC(commands.Cog):
     @commands.group()
     async def bpc(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
-            await ctx.send(f'```=========================\nBROKEN PICTURE PHONE v1.0\n=========================```\nDo {BOT_PREFIX}bpc start to start a game!')
+            await ctx.send(f'```=========================\nBROKEN PICTURE PHONE v1.0\n=========================```\nDo {bot_prefix}bpc start to start a game!')
 
     @bpc.command()
     async def start(self, ctx: commands.Context, members: commands.Greedy[discord.Member]):
