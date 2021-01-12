@@ -23,6 +23,7 @@ transformations = standard_transformations + \
     (implicit_multiplication_application,) + \
     (factorial_notation,) + (convert_xor,)
 
+mpl.use('agg')  # no gui backend
 
 class Tools(commands.Cog):
     '''
