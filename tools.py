@@ -18,12 +18,15 @@ from PyDictionary import PyDictionary
 import urllib.request
 from utils.utilities import webscrape_header, local_time
 from utils.emoji_converter import textToEmoji
+from utils.logger import logger
+from replit import db
 
 transformations = standard_transformations + \
     (implicit_multiplication_application,) + \
     (factorial_notation,) + (convert_xor,)
 
 mpl.use('agg')  # no gui backend
+
 
 class Tools(commands.Cog):
     '''
@@ -181,7 +184,7 @@ class Tools(commands.Cog):
         Creates a poll, with an optional timeout.
         Specify a prompt, and then split options by spaces.
 
-        ex. `$c poll "apples or bananas?" "apples are better" "bananas are the best!"`
+        ex. `=poll "apples or bananas?" "apples are better" "bananas are the best!"`
 
         Polls automatically time out after 60 minutes by default.
         '''
@@ -209,88 +212,166 @@ class Tools(commands.Cog):
 
             reacts = "123456789abcdefghijklmnopqrstuvwxyz"
 
-            cont = True
-
             # Apply reactions
             for i in range(len(options)):
                 await msg.add_reaction(textToEmoji(reacts[i]))
             await msg.add_reaction("🛑")
 
-            def check(reaction, user):
-                return reaction.message.id == msg.id and not user.bot
+            db[str(msg.id)] = {"channel": ctx.channel.id, "msg": msg.id,
+                               "prompt": prompt, "options": options,
+                               "timeout": timeout, "author": ctx.author.id}
+            logger.info("Storing poll...")
 
-            while cont:
-                # Await Responses
-                try:
-                    pending_tasks = [
-                        self.bot.wait_for(
-                            'reaction_add',
-                            check=check,
-                            timeout=60 * timeout),
-                        self.bot.wait_for(
-                            'reaction_remove',
-                            check=check,
-                            timeout=60 * timeout)]
-                    done_tasks, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
-
-                    for task in pending_tasks:
-                        task.cancel()
-
-                    for task in done_tasks:
-                        reaction, user = await task
-
-                    if reaction.emoji == "🛑" and user == ctx.author:
-                        raise asyncio.TimeoutError
-
-                    e = discord.Embed(
-                        title=f"**__POLL__:\n{prompt}**")
-
-                    for i in range(len(options)):
-
-                        reaction = reaction.message.reactions[i]
-
-                        users = [u.mention for u in await reaction.users().flatten() if u != self.bot.user]
-
-                        people = " ".join(users)
-
-                        e.add_field(
-                            name=f"{i+1}) {options[i]}: {len(users)}",
-                            value=people if people else "No one",
-                            inline=False)
-                    e.set_author(
-                        name=f"{ctx.author.display_name}, react to this post with 🛑 to stop the poll.",
-                        icon_url=ctx.author.avatar_url)
-                    e.set_footer(
-                        text=f"Updated {local_time().strftime('%I:%M:%S %p %Z')}")
-
-                    await msg.edit(embed=e)
-
-                except asyncio.TimeoutError:
-                    cont = False
-
-                    e = discord.Embed(
-                        title=f"**__POLL (Closed)__:\n{prompt}**")
-
-                    for i in range(len(options)):
-
-                        reaction = (await ctx.channel.fetch_message(msg.id)).reactions[i]
-
-                        users = [u.mention for u in await reaction.users().flatten() if u != self.bot.user]
-
-                        people = " ".join(users)
-
-                        e.add_field(
-                            name=f"{i+1}) {options[i]}: {len(users)}",
-                            value=people if people else "No one",
-                            inline=False)
-
-                    e.set_author(name=f"Poll by {ctx.author.display_name}",
-                                 icon_url=ctx.author.avatar_url)
-                    e.set_footer(
-                        text=f"Closed {local_time().strftime('%I:%M:%S %p %Z')}")
-
-                    await msg.delete()
-                    await ctx.send(embed=e)
+            await self.listen_poll(ctx, msg, timeout, prompt, options, ctx.author)
 
         else:
             await ctx.send("Sorry, you can only choose up to 35 options at a time.")
+
+    async def listen_poll(self, ctx, msg, timeout, prompt, options, author):
+        logger.info(f"Listening for poll {prompt}")
+
+        message = await msg.channel.fetch_message(msg.id)
+
+        # UPDATE POLL SINCE LAST RESTART
+        e = discord.Embed(
+            title=f"**__POLL__:\n{prompt}**")
+
+        for i in range(len(options)):
+
+            reaction = message.reactions[i]
+
+            users = [u.mention for u in await reaction.users().flatten() if u != self.bot.user]
+
+            people = " ".join(users)
+
+            e.add_field(
+                name=f"{i+1}) {options[i]}: {len(users)}",
+                value=people if people else "No one",
+                inline=False)
+        e.set_author(
+            name=f"{author.display_name}, react to this post with 🛑 to stop the poll.",
+            icon_url=author.avatar_url)
+        e.set_footer(
+            text=f"Updated {local_time().strftime('%I:%M:%S %p %Z')}")
+
+        await msg.edit(embed=e)
+
+        cont = True
+
+        def check(payload):
+            return payload.message_id == msg.id and not ctx.guild.get_member(payload.user_id).bot
+
+        while cont:
+            # Await Responses
+            try:
+                if timeout <= 0:
+                    pending_tasks = [
+                    self.bot.wait_for(
+                        'raw_reaction_add',
+                        check=check),
+                    self.bot.wait_for(
+                        'raw_reaction_remove',
+                        check=check)]
+                else:
+                    pending_tasks = [
+                    self.bot.wait_for(
+                        'raw_reaction_add',
+                        check=check,
+                        timeout=60 * timeout),
+                    self.bot.wait_for(
+                        'raw_reaction_remove',
+                        check=check,
+                        timeout=60 * timeout)]
+
+                done_tasks, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
+
+                for task in pending_tasks:
+                    task.cancel()
+
+                for task in done_tasks:
+                    payload = await task
+
+                user = ctx.guild.get_member(payload.user_id)
+                message = await msg.channel.fetch_message(payload.message_id)
+
+                if payload.emoji.name == "🛑" and user.id == author.id:
+                    raise asyncio.TimeoutError
+
+                e = discord.Embed(
+                    title=f"**__POLL__:\n{prompt}**")
+
+                for i in range(len(options)):
+
+                    reaction = message.reactions[i]
+
+                    users = [u.mention for u in await reaction.users().flatten() if u != self.bot.user]
+
+                    people = " ".join(users)
+
+                    e.add_field(
+                        name=f"{i+1}) {options[i]}: {len(users)}",
+                        value=people if people else "No one",
+                        inline=False)
+                e.set_author(
+                    name=f"{author.display_name}, react to this post with 🛑 to stop the poll.",
+                    icon_url=author.avatar_url)
+                e.set_footer(
+                    text=f"Updated {local_time().strftime('%I:%M:%S %p %Z')}")
+
+                await msg.edit(embed=e)
+
+            except asyncio.TimeoutError:
+                cont = False
+
+                e = discord.Embed(
+                    title=f"**__POLL (Closed)__:\n{prompt}**")
+
+                for i in range(len(options)):
+
+                    reaction = (await ctx.channel.fetch_message(msg.id)).reactions[i]
+
+                    users = [u.mention for u in await reaction.users().flatten() if u != self.bot.user]
+
+                    people = " ".join(users)
+
+                    e.add_field(
+                        name=f"{i+1}) {options[i]}: {len(users)}",
+                        value=people if people else "No one",
+                        inline=False)
+
+                e.set_author(name=f"Poll by {author.display_name}",
+                                icon_url=author.avatar_url)
+                e.set_footer(
+                    text=f"Closed {local_time().strftime('%I:%M:%S %p %Z')}")
+
+                msgID = msg.id
+
+                await msg.delete()
+                await ctx.send(embed=e)
+
+                del db[str(msgID)]
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        '''
+        Reconstruct poll listeners
+        '''
+        for key in db.keys():
+
+            poll = db[key]
+
+            logger.info(f"Found poll: {poll}")
+            channel: discord.TextChannel = self.bot.get_channel(poll["channel"])
+
+            try:
+                msg = await channel.fetch_message(int(key))
+            except:
+                # msg not found
+                del db[key]
+                continue
+
+            ctx = await self.bot.get_context(msg)
+            author = msg.guild.get_member(poll["author"])
+
+            await self.listen_poll(ctx, msg, poll["timeout"], poll["prompt"], poll["options"], author)
+
