@@ -356,8 +356,9 @@ class Tools(commands.Cog):
         '''
         Reconstruct poll listeners
         '''
-        for key in db.keys():
+        coros = []
 
+        for key in db.keys():
             poll = db[key]
 
             logger.info(f"Found poll: {poll}")
@@ -373,5 +374,5 @@ class Tools(commands.Cog):
             ctx = await self.bot.get_context(msg)
             author = msg.guild.get_member(poll["author"])
 
-            await self.listen_poll(ctx, msg, poll["timeout"], poll["prompt"], poll["options"], author)
-
+            coros.append(self.listen_poll(ctx, msg, poll["timeout"], poll["prompt"], poll["options"], author))
+        await asyncio.gather(*coros)
