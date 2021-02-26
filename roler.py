@@ -6,7 +6,15 @@ from utils.logger import logger
 CHANNEL_ID = 753408177919492097
 
 # Getting roles channel
-ROLES = {"🚲": "New Member", "🎮": "Weekly Gamer"}
+ROLES = {"🚲": "New Member", "🎮": "Weekly Gamer",
+        "✈": "Aero",
+        "⚛": "Physics",
+        "🤖": "Robo",
+        "🦠": "Biomed",
+        "💰": "MSF",
+        "⚡": "ECE",
+        "🌞": "Energy",
+        "📊": "MI"}
 
 
 class Roler(commands.Cog):
