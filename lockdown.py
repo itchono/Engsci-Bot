@@ -154,6 +154,9 @@ class Lockdown(commands.Cog):
         verified2 = discord.utils.get(
             ctx.guild.voice_channels, name="Verified")
         await verified2.set_permissions(discord.utils.get(ctx.guild.roles, name="Verified"), read_messages=True)
+
+        library = discord.utils.get(ctx.guild.voice_channels, id=808470402288189521)
+        await library.set_permisisons(ctx.guild.default_role, speak=False)
         
         for cog in cogs.lockdown_cogs:
             try:
@@ -163,6 +166,9 @@ class Lockdown(commands.Cog):
 
         if not ctx.channel.id == CHANNEL_ID:
             await ctx.send("LOCKDOWN RELEASED")
+        else:
+            general = discord.utils.get(ctx.guild.text_channels, name="general")
+            await general.send("Lockdown released. Please follow any additional guidelines about discussing the test in the meantime.\nPRO TIP: Press `Shift-Esc` to mark all of your channels as read")
 
     @commands.command()
     @commands.guild_only()

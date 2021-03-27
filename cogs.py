@@ -6,8 +6,9 @@ from message_copier import Copier
 from roler import Roler
 from tools import Tools
 from pruner import Pruner
+from biolab import Biolab
 
 lockdown_cogs = [General, RoleManager,
-                 Listener, BPC, Copier, Roler, Tools, Pruner]
+                 Listener, BPC, Copier, Roler, Tools, Pruner, Biolab]
 
 other_cogs = [ErrorHandler, Lockdown]

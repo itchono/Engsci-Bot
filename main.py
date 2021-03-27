@@ -36,4 +36,8 @@ async def on_ready():
 
 keep_alive()
 # start internal server to keep bot loaded
-client.run(os.getenv("TOKEN"))
+
+try:
+    client.run(os.getenv("TOKEN"))
+except discord.HTTPException:
+    os.system("kill 1")  # hard restart on 429
