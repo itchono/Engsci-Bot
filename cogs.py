@@ -7,8 +7,9 @@ from roler import Roler
 from tools import Tools
 from pruner import Pruner
 from biolab import Biolab
+from call_emojis import Emojis
 
 lockdown_cogs = [General, RoleManager,
-                 Listener, BPC, Copier, Roler, Tools, Pruner, Biolab]
+                 Listener, BPC, Copier, Roler, Tools, Pruner, Biolab, Emojis]
 
 other_cogs = [ErrorHandler, Lockdown]
