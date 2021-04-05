@@ -126,7 +126,7 @@ class General(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def emoji(self, ctx: commands.Context):
+    async def emojis(self, ctx: commands.Context):
         '''
         Shows all emoji in the server
         '''
