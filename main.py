@@ -11,6 +11,9 @@ from utils.logger import logger
 from self_ping import keep_alive
 import cogs
 
+import matplotlib as mpl
+mpl.use('AGG')  # no gui backend
+
 dotenv.load_dotenv()
 set_start_time(time.perf_counter())
 
