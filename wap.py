@@ -12,6 +12,8 @@ class WAP(commands.Cog):
     async def on_message(self, message: discord.Message):
         '''
         Replies when a WAP trigger is said in chat
+
+        Full credits to Daniel Foster and Kate Whelan for supplying lyrics
         '''
         if message.author == self.bot.user:
             return

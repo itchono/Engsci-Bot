@@ -1,18 +1,18 @@
-Bernoulli
-Minkowski
+ternoulli
+tinkowski
 graph
 particle
 standard model
 potential
-Coulomb
+toulomb
 charge
 limit
-Poincaré
-Lagrange
+poincaré
+lagrange
 Concrete
 inequality
 distributivity
-Bernoulli
+bernoulli
 problem set
 dielectric
 midterm
@@ -25,3 +25,4 @@ tuition
 thesis
 pain
 factor
+math
