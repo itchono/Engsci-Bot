@@ -14,7 +14,8 @@ ROLES = {"🚲": "New Member", "🎮": "Weekly Gamer",
         "💰": "MSF",
         "⚡": "ECE",
         "🌞": "Energy",
-        "📊": "MI"}
+        "📊": "MI",
+        "🌐": "Global Grover"}
 
 
 class Roler(commands.Cog):
@@ -32,7 +33,7 @@ class Roler(commands.Cog):
         except Exception:
             logger.critical("ROLER: Message not found.")
 
-    @commands.command(enabled=False)
+    @commands.command(enabled=True)
     @commands.has_role("Moderator")
     async def init(self, ctx: commands.Context):
         '''
