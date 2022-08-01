@@ -15,6 +15,7 @@ ROLES = {"🚲": "New Member", "🎮": "Weekly Gamer",
         "⚡": "ECE",
         "🌞": "Energy",
         "📊": "MI",
+        "🎵": "Album Club 🎵",
         "🌐": "Global Grover"}
 
 
